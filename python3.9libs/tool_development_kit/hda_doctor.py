@@ -33,13 +33,13 @@ except ImportError:
 
 import hou
 
-WARNING_ICON = hou.qt.Icon('STATUS_warning', 16, 16)
+WARNING_ICON = hou.qt.Icon("STATUS_warning", 16, 16)
 WEAK_WARNING_ICON = QIcon(WARNING_ICON.pixmap(QSize(16, 16), QIcon.Disabled, QIcon.On))
-ERROR_ICON = hou.qt.Icon('STATUS_error', 16, 16)
+ERROR_ICON = hou.qt.Icon("STATUS_error", 16, 16)
 
-DEFINITION_ICON = hou.qt.Icon('MISC_digital_asset', 16, 16)
-PARAMETERS_ICON = hou.qt.Icon('PANETYPES_parameters', 16, 16)
-NETWORK_ICON = hou.qt.Icon('PANETYPES_network', 16, 16)
+DEFINITION_ICON = hou.qt.Icon("MISC_digital_asset", 16, 16)
+PARAMETERS_ICON = hou.qt.Icon("PANETYPES_parameters", 16, 16)
+NETWORK_ICON = hou.qt.Icon("PANETYPES_network", 16, 16)
 
 
 class Scope:
@@ -162,11 +162,11 @@ class ParmInspection(Inspection):
 class DefNamespaceMissing(HDANameInspection):
     @classmethod
     def name(cls):
-        return 'Missing HDA namespace'
+        return "Missing HDA namespace"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects missing HDA namespace.'
+        return "This inspection detects missing HDA namespace."
 
     @classmethod
     def severity(cls):
@@ -182,14 +182,11 @@ class DefNamespaceMissing(HDANameInspection):
 
     @staticmethod
     def _namespaceFromUserName():
-        return getpass.getuser().replace(' ', '_').lower()
+        return getpass.getuser().replace(" ", "_").lower()
 
     @classmethod
     def fixVariants(cls, namespace, name, version):
-        return [
-            FixVariant(cls._namespaceFromUserName(), 'User name from OS.'),
-            None
-        ]
+        return [FixVariant(cls._namespaceFromUserName(), "User name from OS."), None]
 
     @classmethod
     def fix(cls, namespace, name, version, variant=0, user_value=None):
@@ -200,7 +197,7 @@ class DefNamespaceMissing(HDANameInspection):
         else:
             raise ValueError
 
-        fixed_name = '::'.join([namespace, name, version])
+        fixed_name = "::".join([namespace, name, version])
         return fixed_name
 
 
@@ -208,11 +205,11 @@ class DefNamespaceMissing(HDANameInspection):
 class DefNamespaceWrongCase(HDANameInspection):
     @classmethod
     def name(cls):
-        return 'Wrong HDA namespace case'
+        return "Wrong HDA namespace case"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects wrong HDA namespace case.'
+        return "This inspection detects wrong HDA namespace case."
 
     @classmethod
     def severity(cls):
@@ -235,9 +232,7 @@ class DefNamespaceWrongCase(HDANameInspection):
 
     @classmethod
     def fixVariants(cls, namespace, name, version):
-        return [
-            FixVariant(namespace.lower(), 'Case lowered.')
-        ]
+        return [FixVariant(namespace.lower(), "Case lowered.")]
 
     @classmethod
     def fix(cls, namespace, name, version, variant=0, user_value=None):
@@ -248,7 +243,7 @@ class DefNamespaceWrongCase(HDANameInspection):
         else:
             raise ValueError  # Todo: reflect current inspection in message
 
-        fixed_name = '::'.join([namespace, name, version])
+        fixed_name = "::".join([namespace, name, version])
         return fixed_name
 
 
@@ -256,11 +251,11 @@ class DefNamespaceWrongCase(HDANameInspection):
 class DefNameWrongCase(HDANameInspection):
     @classmethod
     def name(cls):
-        return 'Wrong HDA name case'
+        return "Wrong HDA name case"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects wrong HDA name case.'
+        return "This inspection detects wrong HDA name case."
 
     @classmethod
     def severity(cls):
@@ -283,24 +278,22 @@ class DefNameWrongCase(HDANameInspection):
 
     @classmethod
     def fixVariants(cls, namespace, name, version):
-        return [
-            FixVariant(name.lower(), 'Case lowered.')
-        ]
+        return [FixVariant(name.lower(), "Case lowered.")]
 
     @classmethod
     def fix(cls, namespace, name, version, variant=0, user_value=None):
-        return '::'.join([namespace, name.lower(), version])
+        return "::".join([namespace, name.lower(), version])
 
 
 @registerInspection
 class DefVersionMissing(HDANameInspection):
     @classmethod
     def name(cls):
-        return 'Missing HDA version'
+        return "Missing HDA version"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects missing HDA version.'
+        return "This inspection detects missing HDA version."
 
     @classmethod
     def severity(cls):
@@ -316,32 +309,29 @@ class DefVersionMissing(HDANameInspection):
 
     @classmethod
     def fixVariants(cls, definition):
-        return [
-            FixVariant('Set 1.0', 'Default first version.'),
-            None
-        ]
+        return [FixVariant("Set 1.0", "Default first version."), None]
 
     @classmethod
     def fix(cls, namespace, name, version, variant=0, user_value=None):
         if variant == 0:
-            version = '1.0'
+            version = "1.0"
         elif variant == 1 and user_value:
             version = user_value
         else:
             raise ValueError
 
-        return '::'.join([namespace, name, version])
+        return "::".join([namespace, name, version])
 
 
 @registerInspection
 class DefVersionWrongCase(HDANameInspection):
     @classmethod
     def name(cls):
-        return 'Wrong HDA version case'
+        return "Wrong HDA version case"
 
     @classmethod
     def description(cls):
-        return 'Version has characters with wrong case.'
+        return "Version has characters with wrong case."
 
     @classmethod
     def severity(cls):
@@ -364,25 +354,22 @@ class DefVersionWrongCase(HDANameInspection):
 
     @classmethod
     def fixVariants(cls, namespace, name, version):
-        return [
-            FixVariant(version.lower(), 'Case lowered.'),
-            None
-        ]
+        return [FixVariant(version.lower(), "Case lowered."), None]
 
     @classmethod
     def fix(cls, namespace, name, version, variant=0, user_value=None):
-        return '::'.join([namespace, name, version.lower()])
+        return "::".join([namespace, name, version.lower()])
 
 
 @registerInspection
 class DefLabelMissing(Inspection):
     @classmethod
     def name(cls):
-        return 'Missing HDA label'
+        return "Missing HDA label"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects missing HDA label.'
+        return "This inspection detects missing HDA label."
 
     @classmethod
     def scope(cls):
@@ -404,14 +391,11 @@ class DefLabelMissing(Inspection):
     def _newLabelFromHDAName():
         node_type = definition.nodeType()
         _, _, name, _ = node_type.nameComponents()
-        return name.replace('_', ' ').title()
+        return name.replace("_", " ").title()
 
     @classmethod
     def fixVariants(cls, definition):
-        return [
-            FixVariant(cls._newLabelFromHDAName(), 'Label from HDA name.'),
-            None
-        ]
+        return [FixVariant(cls._newLabelFromHDAName(), "Label from HDA name."), None]
 
     @classmethod
     def fix(cls, definition, variant=0, value=None):
@@ -427,11 +411,11 @@ class DefLabelMissing(Inspection):
 class DefIconMissing(Inspection):
     @classmethod
     def name(cls):
-        return 'Missing HDA icon'
+        return "Missing HDA icon"
 
     @classmethod
     def description(cls):
-        return 'This inspection detects missing HDA icon.'
+        return "This inspection detects missing HDA icon."
 
     @classmethod
     def scope(cls):
@@ -451,9 +435,7 @@ class DefIconMissing(Inspection):
 
     @classmethod
     def fixVariants(cls, definition):
-        return [
-            None
-        ]
+        return [None]
 
     @classmethod
     def fix(cls, definition, variant=0, user_value=None):
@@ -486,7 +468,7 @@ class InspectionsModel(QAbstractItemModel):
             return
 
         if role == Qt.DisplayRole:
-            return ('Name', 'Description')[section]
+            return ("Name", "Description")[section]
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
 
@@ -507,7 +489,12 @@ class InspectionsModel(QAbstractItemModel):
             return QModelIndex()
 
     def flags(self, index):
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemNeverHasChildren
+        return (
+            Qt.ItemIsEnabled
+            | Qt.ItemIsSelectable
+            | Qt.ItemIsUserCheckable
+            | Qt.ItemNeverHasChildren
+        )
 
     def data(self, index, role):
         if not index.isValid():
@@ -524,7 +511,7 @@ class InspectionsModel(QAbstractItemModel):
                 return {
                     SeverityType.WeakWarning: WEAK_WARNING_ICON,
                     SeverityType.Warning: WARNING_ICON,
-                    SeverityType.Error: ERROR_ICON
+                    SeverityType.Error: ERROR_ICON,
                 }[inspection.severity()]
         elif index.column() == 1:
             if role == Qt.DisplayRole:
@@ -637,8 +624,13 @@ class AnalysesModel(QAbstractItemModel):
             if parent.row() == 0:
                 return self.createIndex(row, column, self._data[parent.row()][row])
             elif parent.row() == 1:
-                return self.createIndex(row, column,
-                                        self._data[parent.row()][tuple(self._data[parent.row()].keys())[row]])
+                return self.createIndex(
+                    row,
+                    column,
+                    self._data[parent.row()][
+                        tuple(self._data[parent.row()].keys())[row]
+                    ],
+                )
             elif isinstance(data, list):
                 return self.createIndex(row, column, data[row])
             else:
@@ -661,12 +653,12 @@ class AnalysesModel(QAbstractItemModel):
         if column == 0:
             if isinstance(data, (list, dict)):
                 if role == Qt.DisplayRole:
-                    return ('Definition', 'Parameters', 'Network')[row]
+                    return ("Definition", "Parameters", "Network")[row]
                 elif role == Qt.ToolTipRole:
                     return (
-                        'HDA definition-related inspections.',
-                        'Parameters-related inspections.',
-                        'Nodes-related inspections.'
+                        "HDA definition-related inspections.",
+                        "Parameters-related inspections.",
+                        "Nodes-related inspections.",
                     )[row]
                 elif role == Qt.DecorationRole:
                     return (DEFINITION_ICON, PARAMETERS_ICON, NETWORK_ICON)[row]
@@ -679,7 +671,7 @@ class AnalysesModel(QAbstractItemModel):
                     return {
                         SeverityType.WeakWarning: WEAK_WARNING_ICON,
                         SeverityType.Warning: WARNING_ICON,
-                        SeverityType.Error: ERROR_ICON
+                        SeverityType.Error: ERROR_ICON,
                     }[data.severity()]
                 elif role == Qt.CheckStateRole:
                     return Qt.Checked
@@ -703,8 +695,8 @@ class HDADoctorWindow(QWidget):
     def __init__(self, parent=None):
         super(HDADoctorWindow, self).__init__(parent, Qt.Window)
 
-        self.setWindowTitle('HDA Doctor Beta')
-        self.setWindowIcon(hou.qt.Icon('SOP_polydoctor', 32, 32))
+        self.setWindowTitle("HDA Doctor Beta")
+        self.setWindowIcon(hou.qt.Icon("SOP_polydoctor", 32, 32))
         self.resize(600, 600)
 
         # Layout
@@ -718,11 +710,13 @@ class HDADoctorWindow(QWidget):
         main_layout.addLayout(node_layout)
 
         # Node Field
-        node_field = hou.qt.InputField(hou.qt.InputField.StringType, 1, 'Node')
+        node_field = hou.qt.InputField(hou.qt.InputField.StringType, 1, "Node")
         node_layout.addWidget(node_field)
 
         choose_node_button = hou.qt.NodeChooserButton()
-        choose_node_button.nodeSelected.connect(lambda node: node_field.setValue(node.path()))
+        choose_node_button.nodeSelected.connect(
+            lambda node: node_field.setValue(node.path())
+        )
         node_layout.addWidget(choose_node_button)
 
         # Tabs
@@ -733,12 +727,16 @@ class HDADoctorWindow(QWidget):
         self.analyses_model = AnalysesModel()
         choose_node_button.nodeSelected.connect(self.updateData)
         self.analyses_view.setModel(self.analyses_model)
-        tab_widget.addTab(self.analyses_view, hou.qt.Icon('VOP_usdprimvarreader', 16, 16), 'Analyses')
+        tab_widget.addTab(
+            self.analyses_view, hou.qt.Icon("VOP_usdprimvarreader", 16, 16), "Analyses"
+        )
 
         inspections_view = InspectionsView()
         model = InspectionsModel()
         inspections_view.setModel(model)
-        tab_widget.addTab(inspections_view, hou.qt.Icon('STATUS_warning', 16, 16), 'Inspections')
+        tab_widget.addTab(
+            inspections_view, hou.qt.Icon("STATUS_warning", 16, 16), "Inspections"
+        )
 
     def updateData(self, node):
         self.analyses_model.updateData(node)

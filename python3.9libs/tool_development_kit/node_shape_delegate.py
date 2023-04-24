@@ -29,7 +29,7 @@ except ImportError:
     from PySide2.QtGui import *
     from PySide2.QtCore import *
 
-from houdini_tdk.node_shape_list_model import NodeShapeListModel
+from tool_development_kit.node_shape_list_model import NodeShapeListModel
 
 qInstallMessageHandler(lambda *args: None)
 
@@ -63,7 +63,9 @@ class NodeShapeDelegate(QStyledItemDelegate):
         if inner_rect_spaced.width() > 30:
             metrics = painter.fontMetrics()
             text_height = metrics.height()
-            text = metrics.elidedText(index.data(Qt.DisplayRole), Qt.ElideRight, inner_rect_spaced.width())
+            text = metrics.elidedText(
+                index.data(Qt.DisplayRole), Qt.ElideRight, inner_rect_spaced.width()
+            )
             painter.drawText(inner_rect, Qt.AlignHCenter | Qt.AlignBottom, text)
         else:
             text_height = 0

@@ -1,33 +1,21 @@
-"""
-Tool Development Kit for SideFX Houdini
-Copyright (C) 2021  Ivan Titov
+# -*- coding: utf-8 -*-
+"""_summary_"""
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
+# Libraries
 from __future__ import print_function
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
+from PySide2.QtCore import *
 
-try:
-    from PyQt5.QtWidgets import *
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
+# TODO: Disable for release
+# from importlib import reload
 
-    Signal = pyqtSignal
-except ImportError:
-    from PySide2.QtWidgets import *
-    from PySide2.QtGui import *
-    from PySide2.QtCore import *
+# Metadatas
+__author__ = "Ivan Titov, Valentin Beaumont"
+__email__ = "valentin.onze@gmail.com"
+
+
+###### CODE ####################################################################
 
 
 def fuzzyMatch(pattern, text):
@@ -63,7 +51,9 @@ def fuzzyMatch(pattern, text):
 
 
 class FuzzyFilterProxyModel(QSortFilterProxyModel):
-    def __init__(self, parent=None, accept_text_role=Qt.UserRole, comp_text_role=Qt.DisplayRole):
+    def __init__(
+        self, parent=None, accept_text_role=Qt.UserRole, comp_text_role=Qt.DisplayRole
+    ):
         super(FuzzyFilterProxyModel, self).__init__(parent)
 
         self._accept_text_role = accept_text_role
@@ -73,7 +63,7 @@ class FuzzyFilterProxyModel(QSortFilterProxyModel):
         self.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.sort(0, Qt.DescendingOrder)
 
-        self._pattern = ''
+        self._pattern = ""
 
     def setFilterPattern(self, pattern):
         self._pattern = pattern.lower()
@@ -84,7 +74,9 @@ class FuzzyFilterProxyModel(QSortFilterProxyModel):
             return True
 
         source_model = self.sourceModel()
-        text = source_model.data(source_model.index(source_row, 0, source_parent), self._accept_text_role)
+        text = source_model.data(
+            source_model.index(source_row, 0, source_parent), self._accept_text_role
+        )
         matches, _ = fuzzyMatch(self._pattern, text.lower())
         return matches
 

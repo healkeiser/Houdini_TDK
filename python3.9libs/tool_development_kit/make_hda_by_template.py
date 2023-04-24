@@ -34,12 +34,12 @@ except ImportError:
 
 import hou
 
-from .icon_list import IconListDialog, standardIconExists
-from .node_shape_list_dialog import NodeShapeListDialog
-from .node_shape_preview import NodeShapePreview
-from .notification import notify
-from .node_shape import NodeShape
-from .input_field import InputField
+from tool_development_kit.icon_list import IconListDialog, standardIconExists
+from tool_development_kit.node_shape_list_dialog import NodeShapeListDialog
+from tool_development_kit.node_shape_preview import NodeShapePreview
+from tool_development_kit.notification import notify
+from tool_development_kit.node_shape import NodeShape
+from tool_development_kit.input_field import InputField
 
 
 def qColorFromHoudiniColor(color):
@@ -50,36 +50,46 @@ def houdiniColorFromQColor(color):
     return hou.Color(color.getRgbF()[:3])
 
 
-def makeNewHDAFromTemplateNode(template_node, label, name=None, namespace=None, icon=None,
-                               tab_sections=None, version='1.0', location='$HOUDINI_USER_PREF_DIR/otls',
-                               inherit_subnetwork=True, inherit_parm_template_group=True, color=None,
-                               shape=None):
+def makeNewHDAFromTemplateNode(
+    template_node,
+    label,
+    name=None,
+    namespace=None,
+    icon=None,
+    tab_sections=None,
+    version="1.0",
+    location="$HOUDINI_USER_PREF_DIR/otls",
+    inherit_subnetwork=True,
+    inherit_parm_template_group=True,
+    color=None,
+    shape=None,
+):
     location = hou.expandString(location)
     if not os.path.exists(location) or not os.path.isdir(location):
         raise IOError
 
-    new_type_name = ''
+    new_type_name = ""
 
     if namespace:
-        new_type_name += namespace.replace(' ', '_').lower() + '::'
+        new_type_name += namespace.replace(" ", "_").lower() + "::"
 
     if name:
-        new_type_name += name.replace(' ', '_').lower()
+        new_type_name += name.replace(" ", "_").lower()
     else:
-        new_type_name += label.replace(' ', '_').lower()
+        new_type_name += label.replace(" ", "_").lower()
 
-    new_type_name += '::'
+    new_type_name += "::"
 
     if version:
         new_type_name += version
     else:
-        new_type_name += '1.0'
+        new_type_name += "1.0"
 
     template_node_type = template_node.type()
     template_def = template_node_type.definition()
 
-    new_hda_file_name = new_type_name.replace(':', '_').replace('.', '_') + '.hda'
-    new_hda_file_path = os.path.join(location, new_hda_file_name).replace('\\', '/')
+    new_hda_file_name = new_type_name.replace(":", "_").replace(".", "_") + ".hda"
+    new_hda_file_path = os.path.join(location, new_hda_file_name).replace("\\", "/")
     template_def.copyToHDAFile(new_hda_file_path, new_type_name)
 
     new_def = hou.hda.definitionsInFile(new_hda_file_path)[0]
@@ -100,45 +110,55 @@ def makeNewHDAFromTemplateNode(template_node, label, name=None, namespace=None, 
         new_def.setIcon(icon)
 
     if tab_sections and tab_sections.strip():
-        sections = (section.strip() for section in tab_sections.split(','))
+        sections = (section.strip() for section in tab_sections.split(","))
         try:
-            tools = new_def.sections()['Tools.shelf']
+            tools = new_def.sections()["Tools.shelf"]
             content = tools.contents()
-            parser = etree.XMLParser(remove_blank_text=True, resolve_entities=False, strip_cdata=False)
-            root = etree.fromstring(content.encode('utf-8'), parser)
+            parser = etree.XMLParser(
+                remove_blank_text=True, resolve_entities=False, strip_cdata=False
+            )
+            root = etree.fromstring(content.encode("utf-8"), parser)
 
-            tool = root.find('tool')
-            for submenu in tool.findall('toolSubmenu'):
+            tool = root.find("tool")
+            for submenu in tool.findall("toolSubmenu"):
                 tool.remove(submenu)
 
             for section in sections:
-                submenu = etree.Element('toolSubmenu')
+                submenu = etree.Element("toolSubmenu")
                 submenu.text = section
                 tool.append(submenu)
 
-            tools.setContents(etree.tostring(root, encoding='utf-8', pretty_print=True))
+            tools.setContents(etree.tostring(root, encoding="utf-8", pretty_print=True))
         except KeyError:
             pass
 
-    if new_def.hasSection('PreFirstCreate') and extra_file_options.get('PreFirstCreate/IsPython'):
-        pre_first_create_section = new_def.sections()['PreFirstCreate']
+    if new_def.hasSection("PreFirstCreate") and extra_file_options.get(
+        "PreFirstCreate/IsPython"
+    ):
+        pre_first_create_section = new_def.sections()["PreFirstCreate"]
     else:
-        pre_first_create_section = new_def.addSection('PreFirstCreate')
-        new_def.setExtraFileOption('PreFirstCreate/IsExpr', False)
-        new_def.setExtraFileOption('PreFirstCreate/IsScript', True)
-        new_def.setExtraFileOption('PreFirstCreate/IsPython', True)
+        pre_first_create_section = new_def.addSection("PreFirstCreate")
+        new_def.setExtraFileOption("PreFirstCreate/IsExpr", False)
+        new_def.setExtraFileOption("PreFirstCreate/IsScript", True)
+        new_def.setExtraFileOption("PreFirstCreate/IsPython", True)
 
     if color is not None:
-        set_default_color_code = "# Generated by TDK (https://github.com/anvdev/Houdini_TDK)\n" \
-                                 "kwargs['type'].setDefaultColor(hou.Color({}))\n\n".format(color.getRgbF()[:3])
+        set_default_color_code = (
+            "# Generated by TDK (https://github.com/anvdev/Houdini_TDK)\n"
+            "kwargs['type'].setDefaultColor(hou.Color({}))\n\n".format(
+                color.getRgbF()[:3]
+            )
+        )
 
         content = pre_first_create_section.contents()
         content += set_default_color_code
         pre_first_create_section.setContents(content)
 
     if shape is not None:
-        set_default_shape_code = "# Generated by TDK(https://github.com/anvdev/Houdini_TDK)\n" \
-                                 "kwargs['type'].setDefaultShape('{}')\n\n".format(shape)
+        set_default_shape_code = (
+            "# Generated by TDK(https://github.com/anvdev/Houdini_TDK)\n"
+            "kwargs['type'].setDefaultShape('{}')\n\n".format(shape)
+        )
 
         content = pre_first_create_section.contents()
         content += set_default_shape_code
@@ -159,23 +179,25 @@ class IconField(QWidget):
         layout.addWidget(self.edit)
 
         self.icon_preview = QLabel()
-        self.icon_preview.setToolTip('Icon preview')
+        self.icon_preview.setToolTip("Icon preview")
         self.icon_preview.setFixedSize(24, 24)
         self.icon_preview.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.icon_preview)
         self.edit.textChanged.connect(self.updateIconPreview)
 
         self.pick_icon_from_disk_button = QPushButton()
-        self.pick_icon_from_disk_button.setToolTip('Pick icon from disk')
+        self.pick_icon_from_disk_button.setToolTip("Pick icon from disk")
         self.pick_icon_from_disk_button.setFixedSize(24, 24)
-        self.pick_icon_from_disk_button.setIcon(hou.qt.Icon('BUTTONS_chooser_file', 16, 16))
+        self.pick_icon_from_disk_button.setIcon(
+            hou.qt.Icon("BUTTONS_chooser_file", 16, 16)
+        )
         self.pick_icon_from_disk_button.clicked.connect(self._pickIconFromDisk)
         layout.addWidget(self.pick_icon_from_disk_button)
 
         self.pick_icon_from_houdini_button = QPushButton()
-        self.pick_icon_from_houdini_button.setToolTip('Pick icon from Houdini')
+        self.pick_icon_from_houdini_button.setToolTip("Pick icon from Houdini")
         self.pick_icon_from_houdini_button.setFixedSize(24, 24)
-        self.pick_icon_from_houdini_button.setIcon(hou.qt.Icon('OBJ_hlight', 16, 16))
+        self.pick_icon_from_houdini_button.setIcon(hou.qt.Icon("OBJ_hlight", 16, 16))
         self.pick_icon_from_houdini_button.clicked.connect(self._pickIconFromHoudini)
         layout.addWidget(self.pick_icon_from_houdini_button)
 
@@ -191,21 +213,32 @@ class IconField(QWidget):
 
         if os.path.isfile(icon_file_name):  # Todo: Limit allowed file size
             _, ext = os.path.splitext(icon_file_name)
-            if ext in ('.jpg', '.jpeg', '.png', '.bmp', '.tga', '.tif', '.tiff'):
+            if ext in (".jpg", ".jpeg", ".png", ".bmp", ".tga", ".tif", ".tiff"):
                 image = QImage(icon_file_name)
-                self.icon_preview.setPixmap(QPixmap.fromImage(image).scaled(24, 24, Qt.KeepAspectRatio))
+                self.icon_preview.setPixmap(
+                    QPixmap.fromImage(image).scaled(24, 24, Qt.KeepAspectRatio)
+                )
             else:  # Fallback to Houdini loading
                 with hou.undos.disabler():
                     try:
-                        comp_net = hou.node('/img/').createNode('img')
-                        file_node = comp_net.createNode('file')
-                        file_node.parm('filename1').set(icon_file_name)
+                        comp_net = hou.node("/img/").createNode("img")
+                        file_node = comp_net.createNode("file")
+                        file_node.parm("filename1").set(icon_file_name)
 
                         # Todo: Support alpha channel
-                        image_data = file_node.allPixelsAsString(depth=hou.imageDepth.Int8)
-                        image = QImage(image_data, file_node.xRes(), file_node.yRes(), QImage.Format_RGB888)
+                        image_data = file_node.allPixelsAsString(
+                            depth=hou.imageDepth.Int8
+                        )
+                        image = QImage(
+                            image_data,
+                            file_node.xRes(),
+                            file_node.yRes(),
+                            QImage.Format_RGB888,
+                        )
 
-                        self.icon_preview.setPixmap(QPixmap.fromImage(image).scaled(24, 24, Qt.KeepAspectRatio))
+                        self.icon_preview.setPixmap(
+                            QPixmap.fromImage(image).scaled(24, 24, Qt.KeepAspectRatio)
+                        )
                     except hou.OperationFailed:
                         self.icon_preview.clear()
                     finally:
@@ -229,26 +262,30 @@ class IconField(QWidget):
             initial_dir = os.path.dirname(path)
         else:
             initial_dir = os.path.dirname(hou.hipFile.path())
-        icon_file_name, _ = QFileDialog.getOpenFileName(self, 'Pick Icon', initial_dir,
-                                                        filter='Images (*.pic *.pic.Z *.picZ *.pic.gz *.picgz *.rat '
-                                                               '*.tbf *.dsm *.picnc *.piclc *.rgb *.rgba *.sgi *.tif '
-                                                               '*.tif3 *.tif16 *.tif32 *.tiff *.yuv *.pix *.als *.cin '
-                                                               '*.kdk *.exr *.psd *.psb *.si *.tga *.vst *.vtg *.rla '
-                                                               '*.rla16 *.rlb *.rlb16 *.hdr *.ptx *.ptex *.ies *.dds '
-                                                               '*.qtl *.pic *.pic.Z *.pic.gz *.jpg *.jpeg *.bmp *.png '
-                                                               '*.svg *.);;'
-                                                               'All (*.*)')
+        icon_file_name, _ = QFileDialog.getOpenFileName(
+            self,
+            "Pick Icon",
+            initial_dir,
+            filter="Images (*.pic *.pic.Z *.picZ *.pic.gz *.picgz *.rat "
+            "*.tbf *.dsm *.picnc *.piclc *.rgb *.rgba *.sgi *.tif "
+            "*.tif3 *.tif16 *.tif32 *.tiff *.yuv *.pix *.als *.cin "
+            "*.kdk *.exr *.psd *.psb *.si *.tga *.vst *.vtg *.rla "
+            "*.rla16 *.rlb *.rlb16 *.hdr *.ptx *.ptex *.ies *.dds "
+            "*.qtl *.pic *.pic.Z *.pic.gz *.jpg *.jpeg *.bmp *.png "
+            "*.svg *.);;"
+            "All (*.*)",
+        )
         if icon_file_name:
             self.edit.setText(icon_file_name)
 
     def _pickIconFromHoudini(self):
-        icon_file_name = IconListDialog.getIconName(self, 'Pick Icon', self.edit.text())
+        icon_file_name = IconListDialog.getIconName(self, "Pick Icon", self.edit.text())
         if icon_file_name:
             self.edit.setText(icon_file_name)
 
 
 class LocationField(QWidget):
-    def __init__(self, content=''):
+    def __init__(self, content=""):
         super(LocationField, self).__init__()
 
         layout = QHBoxLayout(self)
@@ -259,9 +296,9 @@ class LocationField(QWidget):
         layout.addWidget(self.edit)
 
         self.pick_location_button = QPushButton()
-        self.pick_location_button.setToolTip('Pick location')
+        self.pick_location_button.setToolTip("Pick location")
         self.pick_location_button.setFixedSize(24, 24)
-        self.pick_location_button.setIcon(hou.qt.Icon('BUTTONS_chooser_folder', 16, 16))
+        self.pick_location_button.setIcon(hou.qt.Icon("BUTTONS_chooser_folder", 16, 16))
         self.pick_location_button.clicked.connect(self._pickLocation)
         layout.addWidget(self.pick_location_button)
 
@@ -272,9 +309,11 @@ class LocationField(QWidget):
         return hou.expandString(self.edit.text())
 
     def _pickLocation(self):
-        path = QFileDialog.getExistingDirectory(self, 'Pick Location', self.path())
+        path = QFileDialog.getExistingDirectory(self, "Pick Location", self.path())
         if path:
-            path = hou.text.collapseCommonVars(path, ['$HOUDINI_USER_PREF_DIR', '$HIP', '$JOB'])
+            path = hou.text.collapseCommonVars(
+                path, ["$HOUDINI_USER_PREF_DIR", "$HIP", "$JOB"]
+            )
             self.edit.setText(path)
 
 
@@ -283,7 +322,9 @@ class ColorField(QWidget):
         super(ColorField, self).__init__()
 
         self.node_color = qColorFromHoudiniColor(node.color())
-        self.default_node_type_color = qColorFromHoudiniColor(node.type().defaultColor())
+        self.default_node_type_color = qColorFromHoudiniColor(
+            node.type().defaultColor()
+        )
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -295,7 +336,7 @@ class ColorField(QWidget):
         layout.addWidget(self.edit)
 
         self.pick_color_button = hou.qt.ColorSwatchButton()
-        self.pick_color_button.setToolTip('Pick color')
+        self.pick_color_button.setToolTip("Pick color")
         self.pick_color_button.setFixedSize(52, 24)
         self.pick_color_button.setColor(self.node_color)
         self.pick_color_button.colorChanged.connect(self._onColorPicked)
@@ -342,7 +383,7 @@ class NodeShapeField(QWidget):
     def __init__(self, node):
         super(NodeShapeField, self).__init__()
 
-        self.node_shape = node.userData('nodeshape') or ''
+        self.node_shape = node.userData("nodeshape") or ""
         self.default_node_type_shape = node.type().defaultShape()
 
         layout = QHBoxLayout(self)
@@ -354,7 +395,7 @@ class NodeShapeField(QWidget):
         layout.addWidget(self.edit)
 
         self.shape_preview = NodeShapePreview()
-        self.shape_preview.setToolTip('Shape preview')
+        self.shape_preview.setToolTip("Shape preview")
         self.shape_preview.setFixedSize(52, 24)
         layout.addWidget(self.shape_preview)
         self.edit.textChanged.connect(self.shape_preview.setShape)
@@ -362,9 +403,9 @@ class NodeShapeField(QWidget):
             self.shape_preview.setShape(self.node_shape)
 
         self.pick_shape_button = QPushButton()
-        self.pick_shape_button.setToolTip('Pick shape')
+        self.pick_shape_button.setToolTip("Pick shape")
         self.pick_shape_button.setFixedSize(24, 24)
-        self.pick_shape_button.setIcon(hou.qt.Icon('NETVIEW_shape_palette', 16, 16))
+        self.pick_shape_button.setIcon(hou.qt.Icon("NETVIEW_shape_palette", 16, 16))
         self.pick_shape_button.clicked.connect(self._pickShape)
         layout.addWidget(self.pick_shape_button)
 
@@ -391,7 +432,9 @@ class NodeShapeField(QWidget):
             return name
 
     def _pickShape(self):
-        shape_name = NodeShapeListDialog.getShapeName(self, 'Pick Node Shape', self.edit.text())
+        shape_name = NodeShapeListDialog.getShapeName(
+            self, "Pick Node Shape", self.edit.text()
+        )
         if shape_name:
             self.edit.setText(shape_name)
 
@@ -402,10 +445,10 @@ class MakeHDAByTemplateDialog(QDialog):
 
         # Data
         self.node = node
-        self.__user_template_used = node.type().name() != 'tdk::template'
+        self.__user_template_used = node.type().name() != "tdk::template"
 
-        self.setWindowTitle('TDK: HDA by Template')
-        self.setWindowIcon(hou.qt.Icon('NODEFLAGS_template', 32, 32))
+        self.setWindowTitle("TDK: HDA by Template")
+        self.setWindowIcon(hou.qt.Icon("NODEFLAGS_template", 32, 32))
         self.resize(400, 250)
 
         main_layout = QVBoxLayout(self)
@@ -417,55 +460,55 @@ class MakeHDAByTemplateDialog(QDialog):
         form_layout.setSpacing(4)
         main_layout.addLayout(form_layout)
 
-        self.location_field = LocationField('$HOUDINI_USER_PREF_DIR/otls')
-        form_layout.addRow('Location', self.location_field)
+        self.location_field = LocationField("$HOUDINI_USER_PREF_DIR/otls")
+        form_layout.addRow("Location", self.location_field)
 
         self.label_field = InputField()
         self.label_field.textChanged.connect(self._onLabelChanged)
-        form_layout.addRow('Label', self.label_field)
+        form_layout.addRow("Label", self.label_field)
 
         self.name_field = InputField()
         self.name_field.textChanged.connect(self._onNameChanged)
-        form_layout.addRow('Name', self.name_field)
+        form_layout.addRow("Name", self.name_field)
 
         self.author_field = InputField()
         self.author_field.textChanged.connect(self._onAuthorChanged)
-        form_layout.addRow('Author', self.author_field)
+        form_layout.addRow("Author", self.author_field)
 
         self.sections = InputField()
         self.sections.textChanged.connect(self._onSectionsChanged)
-        form_layout.addRow('Sections', self.sections)
+        form_layout.addRow("Sections", self.sections)
 
         self.icon_field = IconField()
-        form_layout.addRow('Icon', self.icon_field)
+        form_layout.addRow("Icon", self.icon_field)
 
-        self.version_field = InputField('1.0')
-        form_layout.addRow('Version', self.version_field)
+        self.version_field = InputField("1.0")
+        form_layout.addRow("Version", self.version_field)
 
         self.color_field = ColorField(node)
-        form_layout.addRow('Color', self.color_field)
+        form_layout.addRow("Color", self.color_field)
 
         self.shape_field = NodeShapeField(node)
-        form_layout.addRow('Shape', self.shape_field)
+        form_layout.addRow("Shape", self.shape_field)
 
-        self.inherit_subnetwork_toggle = QCheckBox('Inherit subnetwork')
+        self.inherit_subnetwork_toggle = QCheckBox("Inherit subnetwork")
         self.inherit_subnetwork_toggle.setChecked(True)
         form_layout.addWidget(self.inherit_subnetwork_toggle)
 
-        self.inherit_parm_template_group_toggle = QCheckBox('Inherit parameters')
+        self.inherit_parm_template_group_toggle = QCheckBox("Inherit parameters")
         self.inherit_parm_template_group_toggle.setChecked(True)
         form_layout.addWidget(self.inherit_parm_template_group_toggle)
 
-        self.install_toggle = QCheckBox('Install new HDA')
+        self.install_toggle = QCheckBox("Install new HDA")
         self.install_toggle.setChecked(True)
         form_layout.addWidget(self.install_toggle)
 
-        self.replace_node_toggle = QCheckBox('Replace template node')
+        self.replace_node_toggle = QCheckBox("Replace template node")
         self.replace_node_toggle.setChecked(True)
         self.install_toggle.toggled.connect(self.replace_node_toggle.setEnabled)
         form_layout.addWidget(self.replace_node_toggle)
 
-        self.open_type_properties_toggle = QCheckBox('Open type properties')
+        self.open_type_properties_toggle = QCheckBox("Open type properties")
         self.open_type_properties_toggle.setChecked(True)
         self.install_toggle.toggled.connect(self.open_type_properties_toggle.setEnabled)
         form_layout.addWidget(self.open_type_properties_toggle)
@@ -476,11 +519,11 @@ class MakeHDAByTemplateDialog(QDialog):
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
         buttons_layout.addSpacerItem(spacer)
 
-        ok_button = QPushButton('OK')
+        ok_button = QPushButton("OK")
         ok_button.clicked.connect(self._onOk)
         buttons_layout.addWidget(ok_button)
 
-        cancel_button = QPushButton('Cancel')
+        cancel_button = QPushButton("Cancel")
         cancel_button.clicked.connect(self.reject)
         buttons_layout.addWidget(cancel_button)
 
@@ -496,7 +539,7 @@ class MakeHDAByTemplateDialog(QDialog):
             label = name
         else:
             label = node.name()
-        label = label.replace('_', ' ').title()
+        label = label.replace("_", " ").title()
         self.label_field.setText(label)
         self._onLabelChanged(label)
 
@@ -504,7 +547,7 @@ class MakeHDAByTemplateDialog(QDialog):
             author = namespace or hou.userName()
         else:
             author = hou.userName()
-        author = author.replace('_', ' ').title()
+        author = author.replace("_", " ").title()
         self.author_field.setText(author)
         self._onAuthorChanged(author)
 
@@ -517,59 +560,65 @@ class MakeHDAByTemplateDialog(QDialog):
         self.__label_changed = True
         if not self.__name_changed:
             self.name_field.blockSignals(True)
-            self.name_field.setText(label.lower().replace(' ', '_'))
+            self.name_field.setText(label.lower().replace(" ", "_"))
             self.name_field.blockSignals(False)
 
     def _onNameChanged(self, name):
         self.__name_changed = True
         if not self.__label_changed:
             self.label_field.blockSignals(True)
-            self.label_field.setText(name.replace('_', ' ').title())
+            self.label_field.setText(name.replace("_", " ").title())
             self.label_field.blockSignals(False)
 
     def _onAuthorChanged(self, author):
         self.__author_changed = True
         if not self.__sections_changed:
             self.sections.blockSignals(True)
-            self.sections.setText(author.replace('_', ' ').title())
+            self.sections.setText(author.replace("_", " ").title())
             self.sections.blockSignals(False)
 
     def _onSectionsChanged(self, sections):
         self.__sections_changed = True
         if not self.__author_changed:
             self.author_field.blockSignals(True)
-            if ',' in sections:
-                section = sections.split(',')[0].strip()
+            if "," in sections:
+                section = sections.split(",")[0].strip()
             else:
                 section = sections.strip()
-            self.author_field.setText(section.replace('_', ' ').title())
+            self.author_field.setText(section.replace("_", " ").title())
             self.author_field.blockSignals(False)
 
     def _onOk(self):
         if self.node:
             color = self.color_field.color()
             shape = self.shape_field.shape()
-            definition = makeNewHDAFromTemplateNode(self.node,
-                                                    self.label_field.text(),
-                                                    self.name_field.text(),
-                                                    self.author_field.text(),
-                                                    self.icon_field.text(),
-                                                    self.sections.text(),
-                                                    self.version_field.text(),
-                                                    self.location_field.path(),
-                                                    self.inherit_subnetwork_toggle.isChecked(),
-                                                    self.inherit_parm_template_group_toggle.isChecked(),
-                                                    color,
-                                                    shape)
+            definition = makeNewHDAFromTemplateNode(
+                self.node,
+                self.label_field.text(),
+                self.name_field.text(),
+                self.author_field.text(),
+                self.icon_field.text(),
+                self.sections.text(),
+                self.version_field.text(),
+                self.location_field.path(),
+                self.inherit_subnetwork_toggle.isChecked(),
+                self.inherit_parm_template_group_toggle.isChecked(),
+                color,
+                shape,
+            )
 
             if self.install_toggle.isChecked():
                 hou.hda.installFile(definition.libraryFilePath())
                 if self.replace_node_toggle.isChecked():
-                    self.node = self.node.changeNodeType(definition.nodeTypeName(), keep_network_contents=False)
+                    self.node = self.node.changeNodeType(
+                        definition.nodeTypeName(), keep_network_contents=False
+                    )
                     self.node.setCurrent(True, True)
 
                     if color:
-                        definition.nodeType().setDefaultColor(houdiniColorFromQColor(color))
+                        definition.nodeType().setDefaultColor(
+                            houdiniColorFromQColor(color)
+                        )
 
                     if shape:
                         definition.nodeType().setDefaultShape(shape)
@@ -583,19 +632,19 @@ class MakeHDAByTemplateDialog(QDialog):
 
 
 def showMakeHDAByTemplateDialog(**kwargs):
-    if 'node' in kwargs:
-        nodes = kwargs['node'],
+    if "node" in kwargs:
+        nodes = (kwargs["node"],)
     else:
         nodes = hou.selectedNodes()
 
     if not nodes:
-        notify('No node selected', hou.severityType.Error)
+        notify("No node selected", hou.severityType.Error)
         return
     elif len(nodes) > 1:
-        notify('Too much nodes selected', hou.severityType.Error)
+        notify("Too much nodes selected", hou.severityType.Error)
         return
     elif nodes[0].type().definition() is None:
-        notify('Node cannot be user as a template', hou.severityType.Error)
+        notify("Node cannot be user as a template", hou.severityType.Error)
         return
 
     window = MakeHDAByTemplateDialog(nodes[0], hou.qt.mainWindow())

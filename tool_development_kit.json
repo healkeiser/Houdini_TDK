@@ -1,0 +1,10 @@
+{
+    "env": [
+        {
+            "TOOL_DEVELOPMENT_KIT": "path/to/folder"
+        }
+    ],
+    "path": [
+        "$TOOL_DEVELOPMENT_KIT"
+    ]
+}

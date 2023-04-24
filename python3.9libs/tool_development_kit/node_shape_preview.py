@@ -29,7 +29,7 @@ except ImportError:
     from PySide2.QtGui import *
     from PySide2.QtCore import *
 
-from .node_shape import NodeShape
+from tool_development_kit.node_shape import NodeShape
 
 
 class NodeShapePreview(QWidget):

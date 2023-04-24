@@ -64,69 +64,38 @@ class StatItem:
 
 def gatherNetworkStats(root_node):
     data = {
-        'nodes': {
-            'total': 0,
-            'subnetworks': 0,
-            'inside_locked': 0,
-            'max_depth': 0
+        "nodes": {"total": 0, "subnetworks": 0, "inside_locked": 0, "max_depth": 0},
+        "parms": {
+            "animated": 0,
+            "links_to": {"parms": 0, "nodes": 0, "folders": 0, "files": 0, "web": 0},
         },
-        'parms': {
-            'animated': 0,
-            'links_to': {
-                'parms': 0,
-                'nodes': 0,
-                'folders': 0,
-                'files': 0,
-                'web': 0
-            }
+        "code": {
+            "python": {"total": 0, "lines": 0, "empty": 0, "comments": 0},
+            "hscript": {"total": 0, "lines": 0, "empty": 0, "comments": 0},
+            "vex": {"total": 0, "lines": 0, "empty": 0, "comments": 0},
+            "opencl": {"total": 0, "lines": 0, "empty": 0, "comments": 0},
         },
-        'code': {
-            'python': {
-                'total': 0,
-                'lines': 0,
-                'empty': 0,
-                'comments': 0
-            },
-            'hscript': {
-                'total': 0,
-                'lines': 0,
-                'empty': 0,
-                'comments': 0
-            },
-            'vex': {
-                'total': 0,
-                'lines': 0,
-                'empty': 0,
-                'comments': 0
-            },
-            'opencl': {
-                'total': 0,
-                'lines': 0,
-                'empty': 0,
-                'comments': 0
-            }
-        }
     }
 
     current_update_mode = hou.updateModeSetting()
     hou.setUpdateMode(hou.updateMode.Manual)
 
     for node in root_node.allSubChildren():
-        data['nodes']['total'] += 1
+        data["nodes"]["total"] += 1
 
         if node.isNetwork():
-            data['nodes']['subnetworks'] += 1
+            data["nodes"]["subnetworks"] += 1
 
         if not node.isEditable():
-            data['nodes']['inside_locked'] += 1
+            data["nodes"]["inside_locked"] += 1
 
-        depth = node.path().count('/') - 1
-        max_depth = data['nodes']['max_depth']
-        data['nodes']['max_depth'] = max(depth, max_depth)
+        depth = node.path().count("/") - 1
+        max_depth = data["nodes"]["max_depth"]
+        data["nodes"]["max_depth"] = max(depth, max_depth)
 
         for parm in node.parms():
             if parm.getReferencedParm() != parm:
-                data['parms']['links_to']['parms'] += 1
+                data["parms"]["links_to"]["parms"] += 1
 
             parm_template = parm.parmTemplate()
             if isinstance(parm_template, hou.StringParmTemplate):
@@ -135,38 +104,38 @@ def gatherNetworkStats(root_node):
                 if string_type == hou.stringParmType.NodeReference:
                     try:
                         if parm.evalAsNode() is not None:
-                            data['parms']['links_to']['nodes'] += 1
+                            data["parms"]["links_to"]["nodes"] += 1
                     except hou.TypeError:
                         pass
                 elif string_type == hou.stringParmType.NodeReferenceList:
-                    data['parms']['links_to']['nodes'] += len(parm.evalAsNodes())
+                    data["parms"]["links_to"]["nodes"] += len(parm.evalAsNodes())
                 elif string_type == hou.stringParmType.FileReference:
                     if os.path.exists(path):
                         if os.path.isdir(path):
-                            data['parms']['links_to']['folders'] += 1
+                            data["parms"]["links_to"]["folders"] += 1
                         else:  # os.path.isfile(path)
-                            data['parms']['links_to']['files'] += 1
-                elif path.startswith('http'):
-                    data['parms']['links_to']['web'] += 1
+                            data["parms"]["links_to"]["files"] += 1
+                elif path.startswith("http"):
+                    data["parms"]["links_to"]["web"] += 1
 
                 if parmHasExpression(parm):
                     lang = {
-                        hou.exprLanguage.Python: 'python',
-                        hou.exprLanguage.Hscript: 'hscript'
+                        hou.exprLanguage.Python: "python",
+                        hou.exprLanguage.Hscript: "hscript",
                     }[parm.expressionLanguage()]
                     expr = parm.expression()
-                    data['code'][lang]['total'] += 1
-                    data['code'][lang]['lines'] += expr.count('\n')
-                    data['code'][lang]['empty'] += expr.count('\n\n')
-                    for line in expr.split('\n'):
+                    data["code"][lang]["total"] += 1
+                    data["code"][lang]["lines"] += expr.count("\n")
+                    data["code"][lang]["empty"] += expr.count("\n\n")
+                    for line in expr.split("\n"):
                         line = line.lstrip()
-                        if lang == 'python' and line.startswith('#'):
-                            data['code'][lang]['comments'] += 1
-                        elif line.startswith('//'):
-                            data['code'][lang]['comments'] += 1
+                        if lang == "python" and line.startswith("#"):
+                            data["code"][lang]["comments"] += 1
+                        elif line.startswith("//"):
+                            data["code"][lang]["comments"] += 1
 
             if len(parm.keyframes()) > 1:
-                data['parms']['animated'] += 1
+                data["parms"]["animated"] += 1
 
     hou.setUpdateMode(current_update_mode)
 
@@ -182,29 +151,45 @@ class NetworkStatsModel(QAbstractItemModel):
     def updateData(self, node):
         self.beginResetModel()
         data = gatherNetworkStats(node)
-        self._data = StatItem(None, None,
-                              [
-                                  StatItem('Nodes', None,
-                                           [
-                                               StatItem('Total', data['nodes']['total']),
-                                               StatItem('Subnetworks', data['nodes']['subnetworks']),
-                                               StatItem('Inside Locked', data['nodes']['inside_locked']),
-                                               StatItem('Maximum Depth', data['nodes']['max_depth'])
-                                           ]),
-                                  StatItem('Parameters', None,
-                                           [
-                                               StatItem('Animated', data['parms']['animated']),
-                                               StatItem('Links to', None,
-                                                        [
-                                                            StatItem('parameters', data['parms']['links_to']['parms']),
-                                                            StatItem('nodes', data['parms']['links_to']['nodes']),
-                                                            StatItem('folders', data['parms']['links_to']['folders']),
-                                                            StatItem('files', data['parms']['links_to']['files']),
-                                                            StatItem('web', data['parms']['links_to']['web'])
-                                                        ])
-                                           ])
-                                  # Todo: code stats section
-                              ])
+        self._data = StatItem(
+            None,
+            None,
+            [
+                StatItem(
+                    "Nodes",
+                    None,
+                    [
+                        StatItem("Total", data["nodes"]["total"]),
+                        StatItem("Subnetworks", data["nodes"]["subnetworks"]),
+                        StatItem("Inside Locked", data["nodes"]["inside_locked"]),
+                        StatItem("Maximum Depth", data["nodes"]["max_depth"]),
+                    ],
+                ),
+                StatItem(
+                    "Parameters",
+                    None,
+                    [
+                        StatItem("Animated", data["parms"]["animated"]),
+                        StatItem(
+                            "Links to",
+                            None,
+                            [
+                                StatItem(
+                                    "parameters", data["parms"]["links_to"]["parms"]
+                                ),
+                                StatItem("nodes", data["parms"]["links_to"]["nodes"]),
+                                StatItem(
+                                    "folders", data["parms"]["links_to"]["folders"]
+                                ),
+                                StatItem("files", data["parms"]["links_to"]["files"]),
+                                StatItem("web", data["parms"]["links_to"]["web"]),
+                            ],
+                        ),
+                    ],
+                )
+                # Todo: code stats section
+            ],
+        )
         self.endResetModel()
 
     def hasChildren(self, parent):
@@ -267,7 +252,7 @@ class NetworkStatsView(QTreeView):
     def __init__(self):
         super(NetworkStatsView, self).__init__()
 
-        self.setWindowTitle('TDK: Network Statistics')
+        self.setWindowTitle("TDK: Network Statistics")
 
         header = self.header()
         header.setSectionsMovable(False)
@@ -277,7 +262,7 @@ class NetworkStatsView(QTreeView):
         self.setUniformRowHeights(True)
 
         self.setRootIsDecorated(False)
-        self.setStyleSheet('QTreeView::branch {border-image: none; image: none;}')
+        self.setStyleSheet("QTreeView::branch {border-image: none; image: none;}")
         self.setItemsExpandable(False)
 
         model = NetworkStatsModel(self)
@@ -302,6 +287,6 @@ class NetworkStatsWindow(QDialog):
 
 def showStatsForNode(node, **kwargs):
     hou.session.window = NetworkStatsWindow()
-    hou.session.window.setWindowTitle('TDK: Network Statistics: ' + node.path())
+    hou.session.window.setWindowTitle("TDK: Network Statistics: " + node.path())
     hou.session.window.updateData(node)
     hou.session.window.show()

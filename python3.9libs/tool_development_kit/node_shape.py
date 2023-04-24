@@ -76,8 +76,8 @@ class BoundingRectF(QRectF):
             return
 
         if self.__initial:
-            left = top = float('+inf')
-            right = bottom = float('-inf')
+            left = top = float("+inf")
+            right = bottom = float("-inf")
             self.__initial = False
         else:
             left = self.left()
@@ -109,11 +109,10 @@ class BoundingRectF(QRectF):
         return new
 
 
-EXCLUDED_SHAPES = ('vop', 'task', 'shop', 'cop2', 'subnet_input')
+EXCLUDED_SHAPES = ("vop", "task", "shop", "cop2", "subnet_input")
 
 
 class NodeShape(object):
-
     def __init__(self):
         self.__valid = False
         self.__name = None
@@ -183,18 +182,18 @@ class NodeShape(object):
         except IOError:
             return shape
 
-        if 'name' in shape_data:
-            shape.__name = shape_data['name']
+        if "name" in shape_data:
+            shape.__name = shape_data["name"]
         else:
             shape.__name, _ = os.path.splitext(os.path.basename(file_path))
 
         if not allow_excluded and shape.__name in EXCLUDED_SHAPES:
             return shape
 
-        if not shape_data or 'outline' not in shape_data:
+        if not shape_data or "outline" not in shape_data:
             return shape
 
-        shape.__points = tuple(QPointF(x, -y) for x, y in shape_data['outline'])
+        shape.__points = tuple(QPointF(x, -y) for x, y in shape_data["outline"])
 
         shape.__valid = True
         return shape
@@ -204,13 +203,13 @@ class NodeShape(object):
         if not name:
             return NodeShape()
 
-        name = name.replace(' ', '_').lower()
+        name = name.replace(" ", "_").lower()
 
         if allow_excluded and name in EXCLUDED_SHAPES:
             return NodeShape()
 
-        file_name = name + '.json'
-        shape_files = hou.findFilesWithExtension('json', 'config/NodeShapes')
+        file_name = name + ".json"
+        shape_files = hou.findFilesWithExtension("json", "config/NodeShapes")
         for file_path in shape_files:
             if file_name in file_path.lower():
                 return NodeShape.fromFile(file_path)
@@ -218,13 +217,13 @@ class NodeShape(object):
 
     @staticmethod
     def isValidShape(name):
-        name = name.replace(' ', '_').lower()
+        name = name.replace(" ", "_").lower()
 
         if name in EXCLUDED_SHAPES:
             return False
 
-        file_name = name + '.json'
-        shape_files = hou.findFilesWithExtension('json', 'config/NodeShapes')
+        file_name = name + ".json"
+        shape_files = hou.findFilesWithExtension("json", "config/NodeShapes")
         for file_path in shape_files:
             if file_name in file_path.lower():
                 return True

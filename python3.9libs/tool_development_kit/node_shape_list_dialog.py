@@ -31,19 +31,19 @@ except ImportError:
 
 import hou
 
-from .filter_field import FilterField
-from .node_shape_list_model import NodeShapeListModel
-from .node_shape_list_view import NodeShapeListView
-from .node_shape_delegate import NodeShapeDelegate
-from .fuzzy_filter_proxy_model import FuzzyFilterProxyModel
+from tool_development_kit.filter_field import FilterField
+from tool_development_kit.node_shape_list_model import NodeShapeListModel
+from tool_development_kit.node_shape_list_view import NodeShapeListView
+from tool_development_kit.node_shape_delegate import NodeShapeDelegate
+from tool_development_kit.fuzzy_filter_proxy_model import FuzzyFilterProxyModel
 
 
 class NodeShapeListDialog(QDialog):
     def __init__(self, parent=None):
         super(NodeShapeListDialog, self).__init__(parent, Qt.Window)
 
-        self.setWindowTitle('TDK: Node Shapes')
-        self.setWindowIcon(hou.qt.Icon('NETVIEW_shape_palette', 32, 32))
+        self.setWindowTitle("TDK: Node Shapes")
+        self.setWindowIcon(hou.qt.Icon("NETVIEW_shape_palette", 32, 32))
         self.resize(820, 500)
 
         # Layout
@@ -76,12 +76,12 @@ class NodeShapeListDialog(QDialog):
         spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
         buttons_layout.addSpacerItem(spacer)
 
-        self.ok_button = QPushButton('OK')
+        self.ok_button = QPushButton("OK")
         self.ok_button.setVisible(False)
         self.ok_button.clicked.connect(self.accept)
         buttons_layout.addWidget(self.ok_button)
 
-        self.cancel_button = QPushButton('Cancel')
+        self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setVisible(False)
         self.cancel_button.clicked.connect(self.reject)
         buttons_layout.addWidget(self.cancel_button)
@@ -100,9 +100,9 @@ class NodeShapeListDialog(QDialog):
         self.cancel_button.setVisible(True)
 
     @classmethod
-    def getShapeName(cls, parent=hou.qt.mainWindow(), title='Node Shapes', name=None):
+    def getShapeName(cls, parent=hou.qt.mainWindow(), title="Node Shapes", name=None):
         window = NodeShapeListDialog(parent)
-        window.setWindowTitle('TDK: ' + title)
+        window.setWindowTitle("TDK: " + title)
         window.enableDialogMode()
 
         if name:
@@ -114,7 +114,9 @@ class NodeShapeListDialog(QDialog):
                     break
 
         if window.exec_() and window.shape_list_view.currentIndex().isValid():
-            return window.shape_list_view.currentIndex().data(NodeShapeListModel.ShapeNameRole)
+            return window.shape_list_view.currentIndex().data(
+                NodeShapeListModel.ShapeNameRole
+            )
 
 
 def findNodeShape(**kwargs):

@@ -31,7 +31,7 @@ except ImportError:
 
 import hou
 
-from .node_shape import NodeShape
+from tool_development_kit.node_shape import NodeShape
 
 
 class NodeShapeListModel(QAbstractListModel):
@@ -48,7 +48,7 @@ class NodeShapeListModel(QAbstractListModel):
         self.beginResetModel()
 
         shapes = []
-        shape_files = hou.findFilesWithExtension('json', 'config/NodeShapes')
+        shape_files = hou.findFilesWithExtension("json", "config/NodeShapes")
         for file_path in shape_files:
             shape = NodeShape.fromFile(file_path)
             if shape.isValid():
@@ -73,7 +73,7 @@ class NodeShapeListModel(QAbstractListModel):
         shape = index.internalPointer()
 
         if role == Qt.DisplayRole:
-            return shape.name().replace('_', ' ').title()
+            return shape.name().replace("_", " ").title()
         elif role == Qt.ToolTipRole:
             return shape.name()
         elif role == NodeShapeListModel.ShapeNameRole:

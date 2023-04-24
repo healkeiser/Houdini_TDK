@@ -5,41 +5,29 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <toolshelf name="houdini_tdk" label="Tool Development Kit">
-    <memberTool name="houdini_tdk::find_icon::1.0"/>
-    <memberTool name="houdini_tdk::generate_code::1.1"/>
-    <memberTool name="houdini_tdk::increment_hda_version::1.0"/>
-    <memberTool name="houdini_tdk::show_node_user_data::1.0"/>
-    <memberTool name="houdini_tdk::hda_from_template::1.0"/>
+  <toolshelf name="tool_development_kit" label="Tool Development Kit">
+    <memberTool name="tool_development_kit::find_icon::1.0"/>
+    <memberTool name="tool_development_kit::generate_code::1.1"/>
+    <memberTool name="tool_development_kit::increment_hda_version::1.0"/>
+    <memberTool name="tool_development_kit::show_node_user_data::1.0"/>
+    <memberTool name="tool_development_kit::hda_from_template::1.0"/>
   </toolshelf>
 
-  <tool name="houdini_tdk::find_icon::1.0" label="Find Icon" icon="MISC_m">
+  <tool name="tool_development_kit::find_icon::1.0" label="Find Icon" icon="MISC_m">
     <helpText><![CDATA["""Show Find Icon window"""]]></helpText>
-    <script scriptType="python"><![CDATA["""
-Tool Development Kit for SideFX Houdini
-Copyright (C) 2021  Ivan Titov
+    <script scriptType="python"><![CDATA[# Files
+import tool_development_kit as tdk
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+# Reload
+from importlib import reload
+reload(tdk)
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
-import houdini_tdk as tdk
-
+# Code
 tdk.findIcon(**kwargs)
 ]]></script>
   </tool>
 
-  <tool name="houdini_tdk::increment_hda_version::1.0" label="Increment HDA Version" icon="BUTTONS_list_add">
+  <tool name="tool_development_kit::increment_hda_version::1.0" label="Increment HDA Version" icon="BUTTONS_list_add">
     <helpText><![CDATA["""Increment HDA version of the selected node"""]]></helpText>
     <script scriptType="python"><![CDATA["""
 Tool Development Kit for SideFX Houdini
@@ -59,13 +47,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import houdini_tdk as tdk
+import tool_development_kit as tdk
 
 tdk.showNewVersionDialog(**kwargs)
 ]]></script>
   </tool>
 
-  <tool name="houdini_tdk::show_node_user_data::1.0" label="Show Node User Data" icon="TOP_jsondata">
+  <tool name="tool_development_kit::show_node_user_data::1.0" label="Show Node User Data" icon="TOP_jsondata">
     <helpText><![CDATA["""Use Shift+Click to show Cached User Data of the selected node"""
 ]]></helpText>
     <script scriptType="python"><![CDATA["""
@@ -86,13 +74,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import houdini_tdk as tdk
+import tool_development_kit as tdk
 
 tdk.showNodeUserData(cached=kwargs['shiftclick'])
 ]]></script>
   </tool>
 
-  <tool name="houdini_tdk::hda_from_template::1.0" label="Make HDA from Template" icon="NODEFLAGS_template">
+  <tool name="tool_development_kit::hda_from_template::1.0" label="Make HDA from Template" icon="NODEFLAGS_template">
     <script scriptType="python"><![CDATA["""
 Tool Development Kit for SideFX Houdini
 Copyright (C) 2021  Ivan Titov
@@ -111,13 +99,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import houdini_tdk as tdk
+import tool_development_kit as tdk
 
 tdk.showMakeHDAFromTemplateDialog(**kwargs)
 ]]></script>
   </tool>
 
-  <tool name="houdini_tdk::generate_code::1.1" label="Generate Code" icon="MISC_python">
+  <tool name="tool_development_kit::generate_code::1.1" label="Generate Code" icon="MISC_python">
     <helpText><![CDATA["""Generate Python code for selected nodes and copy to clipboard.
 Use Ctrl+Click to show generated code in Code Editor instead of copying.
 Use Shift+Click to show in your default external Code Editor.
@@ -140,7 +128,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import houdini_tdk as tdk
+import tool_development_kit as tdk
 
 tdk.showGenerateCode(**kwargs)
 ]]></script>
